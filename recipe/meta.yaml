@@ -30,6 +30,7 @@ requirements:
     - setuptools-git-versioning
     - libboost-python-devel
     - libdiffpy
+    - numpy
   run:
     - python
     - libboost  # [win]
