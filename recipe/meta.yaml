@@ -12,7 +12,9 @@ source:
 build:
   number: 0
   skip: true  # [py<312 or py>=315]
-  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  script:
+    - export CMAKE_GENERATOR=Ninja  # [linux]
+    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
   build:
