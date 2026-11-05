@@ -1,16 +1,16 @@
 {% set name = "diffpy.srreal" %}
-{% set version = "1.4.0" %}
+{% set version = "1.5.0" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/d/diffpy_srreal/diffpy_srreal-{{ version }}.tar.gz
-  sha256: 34988d5e8e1bf321523de989a48fcac99cba5ff205de26c699e396b9c5a95365
+  url: https://files.pythonhosted.org/packages/source/d/diffpy_srreal/diffpy_srreal-{{ version }}.tar.gz
+  sha256: 37a62396f95b0d08be13259fcbd8b85437c54b31629cef18126cd7daa218a535
 
 build:
-  number: 3
+  number: 0
   skip: true  # [py<311]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
@@ -52,8 +52,7 @@ test:
 
 about:
   home: https://github.com/diffpy/diffpy.srreal/
-  summary: 'Open source (the license is 100% compatible with bsd-3 clause) calculators for PDF, 
-    bond valence sum, and other quantities based on atom pair interaction.'
+  summary: 'Open source (the license is 100% compatible with bsd-3 clause) calculators for PDF, bond valence sum, and other quantities based on atom pair interaction.'
   description: |
     The diffpy.srreal package provides calculators for atomic pair distribution
     function (PDF), bond valence sums (BVS), atom overlaps for a hard-sphere
