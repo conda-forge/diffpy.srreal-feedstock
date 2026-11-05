@@ -7,7 +7,7 @@ Home: https://github.com/diffpy/diffpy.srreal/
 
 Package license: LicenseRef-diffpy
 
-Summary: Open source (the license is 100% compatible with bsd-3 clause) calculators for PDF, bond valence sum, and other quantities based on atom pair interaction.
+Summary: Calculators for PDF, bond valence sum, and other quantities based on atom pair interaction.
 
 Development: https://github.com/diffpy/diffpy.srreal
 
@@ -56,13 +56,6 @@ Current build status
         <table>
           <thead><tr><th>Variant</th><th>Status</th></tr></thead>
           <tbody><tr>
-              <td>osx_64_python3.11.____cpython</td>
-              <td>
-                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=26383&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/diffpy.srreal-feedstock?branchName=main&jobName=osx&configuration=osx%20osx_64_python3.11.____cpython" alt="variant">
-                </a>
-              </td>
-            </tr><tr>
               <td>osx_64_python3.12.____cpython</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=26383&branchName=main">
