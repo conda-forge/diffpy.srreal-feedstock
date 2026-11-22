@@ -1,5 +1,14 @@
 {% set name = "diffpy.srreal" %}
-{% set version = "1.4.0" %}
+{% set version = "1.5.1" %}
+{% set build_number = 0 %}
+
+# CPU and CUDA variants.  The CUDA variant has the higher build number, so it
+# is preferred where it can be installed.
+{% set build_variant = "cpu" %}    # [cuda_compiler_version == "None"]
+{% set srreal_cuda = "OFF" %}      # [cuda_compiler_version == "None"]
+{% set build_number = build_number + 100 %}                                  # [cuda_compiler_version != "None"]
+{% set build_variant = "cuda" ~ cuda_compiler_version | replace(".", "") %}  # [cuda_compiler_version != "None"]
+{% set srreal_cuda = "ON" %}                                                 # [cuda_compiler_version != "None"]
 
 package:
   name: {{ name|lower }}
@@ -7,53 +16,87 @@ package:
 
 source:
   url: https://pypi.org/packages/source/d/diffpy_srreal/diffpy_srreal-{{ version }}.tar.gz
-  sha256: 34988d5e8e1bf321523de989a48fcac99cba5ff205de26c699e396b9c5a95365
+  sha256: a7b3f5a0ae6d4ed88535c17e53385753ea509a233db3a3609e97564822efb55b
+  patches:
+    # conda-forge provides the CUDA runtime as a package, link it dynamically
+    - patches/0001-link-cudart-dynamically.patch
 
 build:
-  number: 3
-  skip: true  # [py<311]
-  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  number: {{ build_number }}
+  string: {{ build_variant }}_py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
+  skip: true  # [py<312 or py>=315]
+  script:
+    - export CMAKE_GENERATOR=Ninja  # [linux]
+    # The Visual Studio generator cannot compile CUDA without the MSBuild
+    # integration of the CUDA toolkit.  Ninja takes no platform or toolset.
+    - set "CMAKE_GENERATOR=Ninja"  # [win]
+    - set "CMAKE_GENERATOR_PLATFORM="  # [win]
+    - set "CMAKE_GENERATOR_TOOLSET="  # [win]
+    # The CUDA kernels need compute capability 7.0 (Volta).  CUDA 12 still
+    # targets older devices by default; drop them from the default list.
+    - export CUDAARCHS="${CUDAARCHS//50-real;52-real;60-real;61-real;/}"  # [linux and (cuda_compiler_version or "").startswith("12")]
+    - set "CUDAARCHS=%CUDAARCHS:50-real;52-real;60-real;61-real;=%"  # [win and (cuda_compiler_version or "").startswith("12")]
+    # Without xsimd the build silently drops the SIMD kernels, so require it
+    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation -Ccmake.define.CMAKE_REQUIRE_FIND_PACKAGE_xsimd=ON -Ccmake.define.SRREAL_CUDA={{ srreal_cuda }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}              # [cuda_compiler_version != "None"]
     - {{ stdlib('c') }}
+    - cmake
+    - ninja
+    - m2-patch                            # [win]
     - python                              # [build_platform != target_platform]
     - cross-python_{{ target_platform }}  # [build_platform != target_platform]
-    - numpy                               # [build_platform != target_platform]
-    - libobjcryst
+    - nanobind >=3.1,<4                   # [build_platform != target_platform]
   host:
     - python
     - pip
-    - setuptools
-    - setuptools-git-versioning
-    - libboost-python-devel
-    - libdiffpy
-    - numpy
+    - scikit-build-core >=0.10
+    - setuptools-scm >=8
+    - nanobind >=3.1,<4
+    - libboost-devel
+    - gsl
+    # conda-forge's libgslcblas is a symlink to the BLAS-switchable libcblas
+    - libcblas
+    - xsimd >=14
+    - cuda-version {{ cuda_compiler_version }}.*  # [cuda_compiler_version != "None"]
+    - cuda-cudart-dev                             # [cuda_compiler_version != "None"]
   run:
     - python
-    - libboost  # [win]
-    - libdiffpy
-    - libobjcryst
+    - numpy
     - pyobjcryst
     - periodictable
     - diffpy.structure
+    # Leaves the CPU variant to machines without a CUDA driver
+    - __cuda                                      # [cuda_compiler_version != "None"]
+    # cuda-cudart-dev has run_exports on Linux only
+    - cuda-cudart                                 # [win and cuda_compiler_version != "None"]
 
 test:
   source_files:
     - tests
+  files:
+    - check_kernels.py
+  imports:
+    - diffpy.srreal
+    - diffpy.srreal.srreal_ext
   requires:
     - pip
     - pytest
   commands:
     - pip check
+    - test -f $SP_DIR/diffpy/srreal/data/bvparm2011sel.cif  # [unix]
+    - if not exist %SP_DIR%\diffpy\srreal\data\bvparm2011sel.cif exit 1  # [win]
+    - python check_kernels.py         # [cuda_compiler_version == "None"]
+    - python check_kernels.py --cuda  # [cuda_compiler_version != "None"]
     - pytest
 
 about:
   home: https://github.com/diffpy/diffpy.srreal/
-  summary: 'Open source (the license is 100% compatible with bsd-3 clause) calculators for PDF, 
-    bond valence sum, and other quantities based on atom pair interaction.'
+  summary: Calculators for PDF, bond valence sum, and other quantities based on atom pair interaction.
   description: |
     The diffpy.srreal package provides calculators for atomic pair distribution
     function (PDF), bond valence sums (BVS), atom overlaps for a hard-sphere
@@ -72,7 +115,11 @@ about:
     (PDFCalculator) or as a reciprocal-space Debye summation and Fourier
     transform of the total scattering structure function (DebyePDFCalculator).
   license: LicenseRef-diffpy
-  license_file: LICENSE.rst
+  license_file:
+    - LICENSE.rst
+    - LICENSE_DANSE.rst
+    - extern/libdiffpy/LICENSE.rst
+    - extern/libdiffpy/LICENSE_DANSE.rst
   doc_url: http://www.diffpy.org/diffpy.srreal/
   dev_url: https://github.com/diffpy/diffpy.srreal
 

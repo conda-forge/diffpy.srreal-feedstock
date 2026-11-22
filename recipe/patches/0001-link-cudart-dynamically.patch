@@ -1,0 +1,24 @@
+Link the CUDA runtime dynamically.
+
+Upstream links cudart statically so that the PyPI wheels are self-contained.
+On conda-forge the runtime comes from the cuda-cudart package instead.
+
+--- a/extern/libdiffpy/cmake/Cuda.cmake
++++ b/extern/libdiffpy/cmake/Cuda.cmake
+@@ -20,7 +20,7 @@
+   CUDA_STANDARD 17
+   CUDA_STANDARD_REQUIRED ON
+   CUDA_EXTENSIONS OFF
+-  CUDA_RUNTIME_LIBRARY Static
++  CUDA_RUNTIME_LIBRARY Shared
+   POSITION_INDEPENDENT_CODE ON
+   # The objects of nvcc have no data for link-time optimization.
+   INTERPROCEDURAL_OPTIMIZATION OFF)
+@@ -32,6 +32,6 @@
+ # The runtime is named here for the programs that link diffpy_cuda through
+ # a static or OBJECT diffpy library, whose link step is not one of CUDA.
+ find_package(CUDAToolkit REQUIRED)
+-target_link_libraries(diffpy_cuda PRIVATE CUDA::cudart_static)
++target_link_libraries(diffpy_cuda PRIVATE CUDA::cudart)
+ target_link_libraries(diffpy PRIVATE diffpy_cuda)
+ target_compile_definitions(diffpy PRIVATE LIBDIFFPY_KERNEL_CUDA=1)

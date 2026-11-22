@@ -1,17 +1,27 @@
 c_compiler:
-- vs2022
+- vs
+c_compiler_version:
+- '2022'
 c_stdlib:
 - vs
 channel_sources:
 - conda-forge
 channel_targets:
 - conda-forge main
+cuda_compiler:
+- cuda-nvcc
+cuda_compiler_version:
+- '13.4'
 cxx_compiler:
-- vs2022
-libboost_python_devel:
-- '1.88'
-numpy:
-- '2'
+- vs
+cxx_compiler_version:
+- '2022'
+gsl:
+- '2.8'
+libboost_devel:
+- '1.90'
+libcblas:
+- 3.9.* *netlib
 pin_run_as_build:
   python:
     min_pin: x.x
