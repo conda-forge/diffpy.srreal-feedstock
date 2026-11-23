@@ -1,6 +1,6 @@
 {% set name = "diffpy.srreal" %}
 {% set version = "1.5.1" %}
-{% set build_number = 0 %}
+{% set build_number = 1 %}
 
 # CPU and CUDA variants.  The CUDA variant has the higher build number, so it
 # is preferred where it can be installed.
@@ -15,7 +15,7 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/d/diffpy_srreal/diffpy_srreal-{{ version }}.tar.gz
+  url: https://files.pythonhosted.org/packages/source/d/diffpy_srreal/diffpy_srreal-{{ version }}.tar.gz
   sha256: a7b3f5a0ae6d4ed88535c17e53385753ea509a233db3a3609e97564822efb55b
   patches:
     # conda-forge provides the CUDA runtime as a package, link it dynamically
